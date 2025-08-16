@@ -1,0 +1,24 @@
+[package]
+name = "sui-rpc-measure"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1.0", features = ["full"] }
+incr_stats = "1.0.2"
+tokio-stream = "0.1.17"
+chrono = "0.4.41"
+clap = { version = "4.5", features = ["derive", "env"]}
+# fastcrypto = { git = "https://github.com/MystenLabs/fastcrypto", rev = "16fa86d0dd943024a9088d46850a72ecd55b7f46" }
+# shared-crypto = {git = "https://github.com/MystenLabs/sui", rev = "869ba5508d7e1cb516217661ad08a4e490b11f40"}
+sui-sdk = {git = "https://github.com/MystenLabs/sui", rev = "869ba5508d7e1cb516217661ad08a4e490b11f40"}
+# sui-types = {git = "https://github.com/MystenLabs/sui", rev = "869ba5508d7e1cb516217661ad08a4e490b11f40"}
+# sui-keys = {git = "https://github.com/MystenLabs/sui", rev = "869ba5508d7e1cb516217661ad08a4e490b11f40"}
+# sui-rpc-api = {git = "https://github.com/MystenLabs/sui", rev = "869ba5508d7e1cb516217661ad08a4e490b11f40"}
+# sui-core = {git = "https://github.com/MystenLabs/sui", branch = "main"}
+# sui-storage = {git = "https://github.com/MystenLabs/sui", rev = "869ba5508d7e1cb516217661ad08a4e490b11f40"}
+# sui-config = {git = "https://github.com/MystenLabs/sui", branch = "main"}
+# sui-execution = {git = "https://github.com/MystenLabs/sui", branch = "main"}
+# move-core-types = {git = "https://github.com/MystenLabs/sui", rev = "869ba5508d7e1cb516217661ad08a4e490b11f40"}
+
+sui-rpc = { git = "https://github.com/MystenLabs/sui-rust-sdk.git", rev = "cab42748a4c00072c6be00a08755b6c71274aaee" }
