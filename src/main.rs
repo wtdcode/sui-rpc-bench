@@ -16,6 +16,8 @@ pub struct Bench {
     pub rpc: String,
     #[arg(short, long)]
     pub grpc: bool,
+    #[arg(short, long, default_value_t=100)]
+    pub poll: u64
 }
 
 #[tokio::main]
@@ -74,7 +76,7 @@ async fn main() {
                     ckpt += 1;
                 }
                 Err(_) => {
-                    tokio::time::sleep(Duration::from_millis(100)).await;
+                    tokio::time::sleep(Duration::from_millis(args.poll)).await;
                     continue;
                 }
             }
