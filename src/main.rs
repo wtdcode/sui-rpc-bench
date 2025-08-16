@@ -3,12 +3,16 @@ use std::time::Duration;
 use chrono::Utc;
 use clap::Parser;
 use sui_rpc::{
-    Client,
-    field::{FieldMask, FieldMaskUtil},
-    proto::sui::rpc::v2beta2::SubscribeCheckpointsRequest,
+    field::{FieldMask, FieldMaskUtil}, proto::sui::rpc::v2beta2::{subscription_service_client::SubscriptionServiceClient, SubscribeCheckpointsRequest}, Client
 };
 use sui_sdk::SuiClientBuilder;
 use tokio_stream::StreamExt;
+// --- Add these imports for tonic ---
+use tonic::{
+    transport::{Channel, ClientTlsConfig, Endpoint},
+    Request, Status,
+};
+
 
 #[derive(Parser)]
 pub struct Bench {
@@ -16,6 +20,8 @@ pub struct Bench {
     pub rpc: String,
     #[arg(short, long)]
     pub grpc: bool,
+    #[arg(short, long)]
+    pub token: Option<String>,
     #[arg(short, long, default_value_t=100)]
     pub poll: u64
 }
@@ -25,17 +31,31 @@ async fn main() {
     let args = Bench::parse();
     let mut stats = incr_stats::incr::Stats::new();
     if args.grpc {
-        let mut client = Client::new(args.rpc).unwrap();
+
+        let endpoint = Endpoint::from_shared(args.rpc).unwrap()
+            .tls_config(ClientTlsConfig::new().with_enabled_roots())
+            .unwrap();
+        let channel = endpoint.connect().await.unwrap();
+
         let request = SubscribeCheckpointsRequest {
             read_mask: Some(FieldMask::from_str("transactions,summary")),
         };
-        let mut stream = client
-            .subscription_client()
-            .subscribe_checkpoints(request)
+        let mut stream = if let Some(token_str) = args.token {
+            // Create a client with an interceptor that adds the token header
+            SubscriptionServiceClient::with_interceptor(channel, move |mut req: Request<()>| {
+                req.metadata_mut().insert("x-token", token_str.clone().try_into().unwrap());
+                Ok(req)
+            }).subscribe_checkpoints(request)
             .await
             .unwrap()
-            .into_inner();
-
+            .into_inner()
+        } else {
+            // Create a client without an interceptor
+            SubscriptionServiceClient::new(channel).subscribe_checkpoints(request)
+            .await
+            .unwrap()
+            .into_inner()
+        };
         while let Some(it) = stream.next().await {
             let now = Utc::now();
             let it = it.unwrap();
