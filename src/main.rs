@@ -226,7 +226,7 @@ async fn main() {
                     if digest == pending_dg.to_string() {
                         let lat = sm.sequence_number.unwrap() - pckpt;
                         tx_stats.update(lat as _).unwrap();
-                        eprintln!("{} on chain after {} blocks", pending_dg, pckpt);
+                        eprintln!("{} on chain after {} blocks", pending_dg, lat);
                         println!(
                             "tx block latency: mean = {:.03}, min = {:.03}, max = {:.03}, std = {:.03}",
                             tx_stats.mean().unwrap(),
