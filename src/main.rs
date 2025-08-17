@@ -238,6 +238,10 @@ async fn main() {
                         break;
                     }
                 }
+
+                if let Some((pckpt, pending_dg)) = pending {
+                    eprintln!("{} not in {} (sent at {})", pending_dg, sm.sequence_number.unwrap(), pckpt);
+                }
             }
 
             if pending.is_none() {
