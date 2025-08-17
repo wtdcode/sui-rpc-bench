@@ -188,7 +188,7 @@ async fn main() {
         let channel = endpoint.connect().await.unwrap();
 
         let request = SubscribeCheckpointsRequest {
-            read_mask: Some(FieldMask::from_str("transactions,summary")),
+            read_mask: Some(FieldMask::from_str("transactions,summary,sequence_number")),
         };
 
         let mut ledger = LedgerServiceClient::with_interceptor(channel.clone(), auth.clone());
@@ -220,13 +220,13 @@ async fn main() {
                 stats.sample_standard_deviation().unwrap_or_default()
             );
 
-            if let Some((pckpt, pending)) = pending {
+            if let Some((pckpt, pending_dg)) = pending {
                 for tx in ck.transactions {
                     let digest = tx.digest.unwrap();
-                    if digest == pending.to_string() {
+                    if digest == pending_dg.to_string() {
                         let lat = sm.sequence_number.unwrap() - pckpt;
                         tx_stats.update(lat as _).unwrap();
-                        eprintln!("{} on chain after {} blocks", pending, pckpt);
+                        eprintln!("{} on chain after {} blocks", pending_dg, pckpt);
                         println!(
                             "tx block latency: mean = {:.03}, min = {:.03}, max = {:.03}, std = {:.03}",
                             tx_stats.mean().unwrap(),
@@ -234,6 +234,7 @@ async fn main() {
                             tx_stats.max().unwrap(),
                             tx_stats.sample_standard_deviation().unwrap_or_default()
                         );
+                        pending = None;
                         break;
                     }
                 }
