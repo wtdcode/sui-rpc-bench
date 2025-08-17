@@ -157,8 +157,8 @@ pub struct Bench {
     pub token: Option<String>,
     #[arg(short, long, default_value_t = 100)]
     pub poll: u64,
-    #[arg(short, long)]
-    pub gas_object: Option<ObjectID>,
+    #[arg(long)]
+    pub gas: Option<ObjectID>,
     #[arg(long)]
     pub rgp: Option<u64>,
     #[arg(short, long)]
@@ -242,7 +242,7 @@ async fn main() {
             if pending.is_none() {
                 if let Some(pass) = &pass {
                     let sender = SuiAddress::from(&pass.public());
-                    let gas_coin = get_object_ref(&mut ledger, args.gas_object.unwrap()).await;
+                    let gas_coin = get_object_ref(&mut ledger, args.gas.unwrap()).await;
                     let mut builder = ProgrammableTransactionBuilder::new();
                     builder
                         .move_call(
