@@ -142,7 +142,6 @@ pub async fn sign_and_execute_transaction(
     if status.is_err() {
         panic!("Tx not on chain")
     } else {
-        eprintln!("{} sent", tx_digest);
         tx_digest
     }
 }
@@ -267,6 +266,7 @@ async fn main() {
                         args.rgp.unwrap(),
                     );
                     let digest = sign_and_execute_transaction(&mut exec, tx, pass).await;
+                    eprintln!("{} sent at {}", digest, sm.sequence_number.unwrap());
                     pending = Some((sm.sequence_number.unwrap(), digest));
                 };
             }
