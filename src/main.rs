@@ -93,7 +93,7 @@ pub async fn sign_and_execute_transaction(
     grpc: &mut TransactionExecutionServiceClient<CH>,
     tx: TransactionData,
     kp: &SuiKeyPair,
-) -> TransactionDigest {
+) -> (Finality, TransactionDigest) {
     let tx_digest = tx.digest();
     let intent_msg = IntentMessage::new(Intent::sui_transaction(), &tx);
     let raw_tx = bcs::to_bytes(&intent_msg).unwrap();
@@ -142,7 +142,7 @@ pub async fn sign_and_execute_transaction(
     if status.is_err() {
         panic!("Tx not on chain")
     } else {
-        tx_digest
+        (finality, tx_digest)
     }
 }
 
@@ -220,8 +220,8 @@ async fn main() {
             );
 
             if let Some((pckpt, pending_dg)) = pending {
-                for tx in ck.transactions {
-                    let digest = tx.digest.unwrap();
+                for tx in ck.transactions.iter() {
+                    let digest = tx.digest.clone().unwrap();
                     if digest == pending_dg.to_string() {
                         let lat = sm.sequence_number.unwrap() - pckpt;
                         tx_stats.update(lat as _).unwrap();
@@ -265,9 +265,19 @@ async fn main() {
                         1_000_000_000,
                         args.rgp.unwrap(),
                     );
-                    let digest = sign_and_execute_transaction(&mut exec, tx, pass).await;
+                    let (fin, digest) = sign_and_execute_transaction(&mut exec, tx, pass).await;
                     eprintln!("{} sent at {}", digest, sm.sequence_number.unwrap());
                     pending = Some((sm.sequence_number.unwrap(), digest));
+                    match fin {
+                        Finality::QuorumExecuted(_) => {
+                            for t in ck.transactions.iter() {
+                                eprintln!("wtf({}) {}", sm.sequence_number.unwrap(), t.digest.as_ref().unwrap());
+                            }
+                        },
+                        _ => {
+
+                        }
+                    }
                 };
             }
         }
