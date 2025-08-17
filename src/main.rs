@@ -160,7 +160,7 @@ pub struct Bench {
     #[arg(short, long)]
     pub gas_object: Option<ObjectID>,
     #[arg(long)]
-    pub rgp: u64,
+    pub rgp: Option<u64>,
     #[arg(short, long)]
     pub send: bool,
 }
@@ -259,7 +259,7 @@ async fn main() {
                         sender,
                         gas_coin,
                         1_000_000_000,
-                        args.rgp,
+                        args.rgp.unwrap(),
                     );
                     let digest = sign_and_execute_transaction(&mut exec, tx, pass).await;
                     pending = Some((sm.sequence_number.unwrap(), digest));
